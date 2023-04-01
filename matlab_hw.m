@@ -15,11 +15,18 @@ X = fourier(x);
 
 figure()
 bar(abs(X))
+n_arr = [1,3,5,10];
 
-rex = wavsyn(N, X);
 xt = X';
 figure()
-plot(rex)
+for i=1:length(n_arr)
+    rex = wavsyn(n_arr(i), X);
+    plot(rex)
+    hold on
+end
+
+legend('1', '3', '5', '10')
+
 
 for i=1:N
     fprintf('C(%d) ',i-1)
@@ -53,14 +60,20 @@ plot(t,x)
 
 
 X = fourier(x);
-xt = X';
 figure()
 bar(abs(X))
 
-rex = wavsyn(N, X);
+n_arr = [1,3,5,10];
 
+xt = X';
 figure()
-plot(rex)
+for i=1:length(n_arr)
+    rex = wavsyn(n_arr(i), X);
+    plot(rex)
+    hold on
+end
+
+legend('1', '3', '5', '10')
 
 
 for i=1:N
@@ -94,14 +107,20 @@ plot(t,x)
 
 
 X = fourier(x);
-xt = X';
 figure()
 bar(abs(X))
 
-rex = wavsyn(N, X);
+n_arr = [1,3,5,10];
 
+xt = X';
 figure()
-plot(rex)
+for i=1:length(n_arr)
+    rex = wavsyn(n_arr(i), X);
+    plot(rex)
+    hold on
+end
+
+legend('1', '3', '5', '10')
 
 
 for i=1:N
@@ -130,14 +149,21 @@ figure();
 plot(t,x)
 X = fourier(x);
 
-xt = X';
 figure()
 bar(abs(X))
 
-rex = wavsyn(N, X);
+n_arr = [1,3,5,10];
 
+xt = X';
 figure()
-plot(rex)
+for i=1:length(n_arr)
+    rex = wavsyn(n_arr(i), X);
+    plot(rex)
+    hold on
+end
+
+legend('1', '3', '5', '10')
+
 
 
 
@@ -167,17 +193,21 @@ figure();
 plot(t,x)
 X = fourier(x);
 
-xt = X';
 
 figure()
 bar(abs(X))
 
-rex = wavsyn(N, X);
+n_arr = [1,3,5,10];
 
+xt = X';
 figure()
-plot(rex)
+for i=1:length(n_arr)
+    rex = wavsyn(n_arr(i), X);
+    plot(rex)
+    hold on
+end
 
-
+legend('1', '3', '5', '10')
 
 for i=1:N
     fprintf('C(%d) ',i-1)
@@ -213,15 +243,23 @@ title('25% Duty Cycle');
 
 
 X = fourier(x);
-xt = X';
+
+
 figure()
 bar(abs(X))
 
-rex = wavsyn(N, X);
 
+n_arr = [1,3,5,10];
+
+xt = X';
 figure()
-plot(rex)
+for i=1:length(n_arr)
+    rex = wavsyn(n_arr(i), X);
+    plot(rex)
+    hold on
+end
 
+legend('1', '3', '5', '10')
 
 
 for i=1:N
