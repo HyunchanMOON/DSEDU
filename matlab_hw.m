@@ -3,7 +3,7 @@ clear;
 close all;
 
 % pulse 1 - cosine squared
-T= 4*pi;
+T= 2*pi;
 N = 256;
 t = linspace(0, T, N);
 x = square(0.6*t);
@@ -11,15 +11,26 @@ plot(t/pi, x, '.-', t/pi, cos(0.6*t))
 xlabel('t / \pi')
 grid on
 
-
 X = fourier(x);
+
 figure()
-bar(X)
+bar(abs(X))
 
 rex = wavsyn(N, X);
-
+xt = X';
 figure()
 plot(rex)
+
+for i=1:N
+    fprintf('C(%d) ',i-1)
+    fprintf(num2str(xt(i)))
+    fprintf(' |C(%d)| ',i-1)
+    fprintf(num2str(abs(xt(i))))
+    fprintf('\n')
+    fprintf('\n')
+end
+
+
 
 
 %% pulse 2 - duty 25%
@@ -34,7 +45,7 @@ T= 2*pi;
 t = linspace(0, T, N);
 
 pulsewidth = 1e-0;
-pulseperiods = [0:50]*4e-0;
+pulseperiods = [0:2*pi]*4e-0;
 
 x = pulstran(t,pulseperiods,@rectpuls,pulsewidth);
 
@@ -42,13 +53,25 @@ plot(t,x)
 
 
 X = fourier(x);
+xt = X';
 figure()
-bar(X)
+bar(abs(X))
 
 rex = wavsyn(N, X);
 
 figure()
 plot(rex)
+
+
+for i=1:N
+    fprintf('C(%d) ',i-1)
+    fprintf(num2str(xt(i)))
+    fprintf(' |C(%d)| ',i-1)
+    fprintf(num2str(abs(xt(i))))
+    fprintf('\n')
+    fprintf('\n')
+end
+
 
 
 %% pulse 3 - duty 12.5%
@@ -63,7 +86,7 @@ T= 2*pi;
 t = linspace(0, T, N);
 
 pulsewidth = 0.5e-0;
-pulseperiods = [0:50]*4e-0;
+pulseperiods = [0:2*pi]*4e-0;
 
 x = pulstran(t,pulseperiods,@rectpuls,pulsewidth);
 
@@ -71,13 +94,25 @@ plot(t,x)
 
 
 X = fourier(x);
+xt = X';
 figure()
-bar(X)
+bar(abs(X))
 
 rex = wavsyn(N, X);
 
 figure()
 plot(rex)
+
+
+for i=1:N
+    fprintf('C(%d) ',i-1)
+    fprintf(num2str(xt(i)))
+    fprintf(' |C(%d)| ',i-1)
+    fprintf(num2str(abs(xt(i))))
+    fprintf('\n')
+    fprintf('\n')
+end
+
 
 %% pulse 4 - one cycle sine
 
@@ -94,13 +129,27 @@ x = sin(2*pi*Fs*t);
 figure();
 plot(t,x)
 X = fourier(x);
+
+xt = X';
 figure()
-bar(X)
+bar(abs(X))
 
 rex = wavsyn(N, X);
 
 figure()
 plot(rex)
+
+
+
+for i=1:N
+    fprintf('C(%d) ',i-1)
+    fprintf(num2str(xt(i)))
+    fprintf(' |C(%d)| ',i-1)
+    fprintf(num2str(abs(xt(i))))
+    fprintf('\n')
+    fprintf('\n')
+end
+
 
 %% pulse 5 - two cycle sine
 
@@ -117,13 +166,28 @@ x = sin(2*2*pi*Fs*t);
 figure();
 plot(t,x)
 X = fourier(x);
+
+xt = X';
+
 figure()
-bar(X)
+bar(abs(X))
 
 rex = wavsyn(N, X);
 
 figure()
 plot(rex)
+
+
+
+for i=1:N
+    fprintf('C(%d) ',i-1)
+    fprintf(num2str(xt(i)))
+    fprintf(' |C(%d)| ',i-1)
+    fprintf(num2str(abs(xt(i))))
+    fprintf('\n')
+    fprintf('\n')
+end
+
 
 %% pulse 6 - triangle
 
@@ -149,8 +213,9 @@ title('25% Duty Cycle');
 
 
 X = fourier(x);
+xt = X';
 figure()
-bar(X)
+bar(abs(X))
 
 rex = wavsyn(N, X);
 
@@ -158,6 +223,15 @@ figure()
 plot(rex)
 
 
+
+for i=1:N
+    fprintf('C(%d) ',i-1)
+    fprintf(num2str(xt(i)))
+    fprintf(' |C(%d)| ',i-1)
+    fprintf(num2str(abs(xt(i))))
+    fprintf('\n')
+    fprintf('\n')
+end
 
 
 
