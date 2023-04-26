@@ -11,7 +11,10 @@ def fft_cal(data, datas, datae, window_sel=1, select_freq=0, f_req=5): # fft 를
     window_dict = {0: 'no window', 1: 'hanning', 2: 'tukey'}
     figsave = 1
 
-    data = np.loadtxt(data) # dat 파일을 load 한다.
+
+    data = pd.read_csv(data, header=None, encoding='utf-8', sep=' ')
+    data = data.values.astype(np.float64)
+    # data = np.loadtxt(data) # dat 파일을 load 한다.
 
     xdata, ydata = data[:, 0], data[:, 1] # 첫번째 항목이 시간, 두번째 항목이 y 값이다.
     dt = xdata[1] - xdata[0] # dt 계산
@@ -182,10 +185,26 @@ def main():
     root.geometry("0x0+100+100") # file open dialog 사이즈
     filename = tk.filedialog.askopenfilename(title="open file", # file open dialog 생성하고 open 한다. .dat 파일만 보이도록 함
                                              filetypes=(("dat file", "*.dat"), ("all files", "*.*")))
-
+    root.destroy()
 
     if filename != '': # 파일이 선택 됐을 때만 실행
-        data = np.loadtxt(filename) # np library를 이용해서 data file 한개만 load 한다.
+
+        # dat_f = open(filename)
+        # dat_arr = np.array([])
+        #
+        # for i, data in enumerate(dat_f):
+        #     d = np.array(data.split())
+        #     d = d.astype(np.float64)
+        #     d = d.reshape(1,-1)
+        #     dat_arr = np.append(dat_arr, d)
+        #
+        # print(dat_arr)
+        data = pd.read_csv(filename, header=None, encoding='utf-8', sep=' ')
+
+        data = data.values.astype(np.float64)
+
+        # data = np.loadtxt(filename) # np library를 이용해서 data file 한개만 load 한다.
+
         datas, datae = point_add(data=data) # 특정 2 지점을 선택해서 시작점 끝점을 추출한다.
 
         data_list = glob.glob(os.path.join('./', '*.dat')) # 경로에 dat 파일 모두 list에 담는다.
