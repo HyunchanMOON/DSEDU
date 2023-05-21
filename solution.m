@@ -190,6 +190,20 @@ E(1, 3)=100
 F = H
 F(:,2)=[]
 
+%% 6X6 Question 1
+clear;
+clc;
+G = round(10*rand(6))
+
+ans1 = G(:, :);% return the matrix G in its original form
+ans2 = G(:);% reshapes all elements of G into a single column vector
+%ans3 = G(7,6);% returns an indexing error
+ans4 = max(G); % maximum entry in each column of G
+ans5 = sum(G); % sum of the entries in each column of G
+ans6 = G(G>4); % entries of G that are greater than 4
+G(G>4)=4; % assigns the value 4 to all entries of G that are greater than 4
+
+
 %% Problem 8
 clear;
 clc;
@@ -201,5 +215,23 @@ A(1, :) = A(1, :) / A(1, 1)
 
 A_new1 = A;
 
-A_new1(2, :) = A(2, :) - A(2,1) * A(1,:)
+A_new1(2, :) = A_new1(2, :) - A_new1(2, 1) * A_new1(1, :);
+
+
+A_new2 = A;
+A_new2(3, :) = A_new2(3, :) - A_new2(3,1) * A_new2(1,:);
+
+A_new3 = A;
+A_new3(3, :) = A_new3(3, :) - A_new3(3, 2) / A_new3(1, 2) * A_new3(1, :);
+
+A_new4 = A;
+pivot = A(2, 1);
+A_new4(2, :) = A_new4(2, :) / pivot;
+
+A_new5 = A;
+pivot2 = A(3, 1);
+A_new5(3, :) = A_new5(3, :) / pivot2
+
+
+R = A;
 
