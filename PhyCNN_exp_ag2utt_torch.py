@@ -63,14 +63,13 @@ class DeepPhyLSTM:
         self.eta_tt_torch.requires_grad = True
         self.ag_torch.requires_grad = True
         
-        self.optimizer = optim.LBFGS(self.model.parameters(), lr=self.learning_rate, max_iter=20000, max_eval=50000, history_size=50, line_search_fn='strong_wolfe')
+
         self.optimizer_Adam = optim.Adam(self.model.parameters(), lr=self.learning_rate)
 
 
     def net_structure(self, ag):
 
         eta = self.model(ag)
-        print('eta_result', eta.shape)
         Phi_ut = self.Phi_t.reshape(1, self.eta_tt.shape[1], self.eta_tt.shape[1])
         Phi_ut = Phi_ut.repeat(self.eta_tt.shape[0], axis=0)
         
@@ -83,12 +82,11 @@ class DeepPhyLSTM:
         return torch.mean(torch.square(eta_tt_torch - eta_tt_pred)) + torch.mean(torch.square(eta_pred[:,:,0:10]))
 
     def train(self, num_epochs, learning_rate, bfgs, batch_size = 64):
-        
+        Loss = []
         self.eta_pred, self.eta_t_pred, self.eta_tt_pred = self.net_structure(self.ag_torch)
         
         self.learning_rate = learning_rate
         self.model.train()
-
 
         for epoch in range(num_epochs):
             N = self.eta_tt.shape[0]
@@ -102,10 +100,26 @@ class DeepPhyLSTM:
                         print('Epoch: %d, It: %d, Loss: %.3e,  Learning Rate: %.3e'
                           %(epoch, it/batch_size, loss.item(), learning_rate))
 
-        if bfgs:
-            pass
+            Loss.append(loss.item())
 
-        
+        if bfgs == 1:
+            # use L-BFGS optimizer
+            self.optimizer_lbfgs = optim.LBFGS(self.model.parameters(), lr=self.learning_rate, max_iter=2000, max_eval=50000, history_size=50, 
+                                               line_search_fn='strong_wolfe')
+            def closure():
+                self.optimizer_lbfgs.zero_grad()
+                self.eta_pred, self.eta_t_pred, self.eta_tt_pred = self.net_structure(self.ag_torch)
+                loss = self.criterion(self.eta_tt_torch, self.eta_tt_pred, self.eta_pred)
+                loss.backward()
+                return loss
+
+            self.optimizer_lbfgs.step(closure)
+
+            print('LBFGS Loss :', self.criterion(self.eta_tt_torch, self.eta_tt_pred, self.eta_pred).item())
+            Loss.append(self.criterion(self.eta_tt_torch, self.eta_tt_pred, self.eta_pred).item())
+            
+
+        return Loss
 
     def predict(self, ag_test):
         ag_test_torch = torch.from_numpy(ag_test).float()
@@ -116,6 +130,11 @@ class DeepPhyLSTM:
         eta_pred = eta_pred.detach().numpy()
         eta_t_pred = eta_t_pred.detach().numpy()
         eta_tt_pred = eta_tt_pred.detach().numpy()
+
+    # def predict(self, ag_star):
+    #     ag_star = torch.tensor(ag_star, dtype=torch.float32)
+    #     eta_pred, eta_t_pred, eta_tt_pred = self.net_structure(ag_star)
+    #     return eta_pred.detach().numpy(), eta_t_pred.detach().numpy(), eta_tt_pred.detach().numpy()
 
         return eta_pred, eta_t_pred, eta_tt_pred
 
@@ -185,4 +204,106 @@ if __name__ == "__main__":
 
     model = DeepPhyLSTM(eta_tt_train, ag_train, Phi_t)
 
-    Loss = model.train(num_epochs=10000, learning_rate=1e-3, bfgs=1, batch_size=N_train)
+    Loss = model.train(num_epochs=100, learning_rate=1e-3, bfgs=1, batch_size=N_train)
+    train_loss = Loss
+
+    plt.figure()
+    plt.plot(np.log(train_loss), label='loss')
+    plt.legend()
+    # Training performance
+
+    X_train = ag_train
+    y_train_ref = eta_train
+    yt_train_ref = eta_t_train
+    ytt_train_ref = eta_tt_train
+    # g_train_ref = -eta_tt_train-ag_train
+
+    # Prediction
+    eta, eta_t, eta_tt = model.predict(X_train)
+
+    y_train_pred = eta
+    yt_train_pred = eta_t
+    ytt_train_pred = eta_tt
+
+    dof = 0
+    for n in range(len(ag_star)):
+        plt.figure()
+        plt.plot(y_train_ref[n, :, dof], label='True')
+        plt.plot(y_train_pred[n, :, dof], label='Predict')
+        plt.title('Training_u')
+        plt.legend()
+
+    for n in range(len(ag_star)):
+        plt.figure()
+        plt.plot(yt_train_ref[n, :, dof], label='True')
+        plt.plot(yt_train_pred[n, :, dof], label='Predict')
+        plt.title('Training_ut')
+        plt.legend()
+
+    for n in range(len(ag_star)):
+        plt.figure()
+        plt.plot(ytt_train_ref[n, :, dof], label='True')
+        plt.plot(ytt_train_pred[n, :, dof], label='Predict')
+        plt.title('Training_utt')
+        plt.legend()
+
+    # Prediction performance
+    ag_pred = mat['input_pred_tf']
+    u_pred = mat['target_pred_X_tf']
+    ut_pred = mat['target_pred_Xd_tf']
+    utt_pred = mat['target_pred_Xdd_tf']
+    ag_pred = ag_pred.reshape([ag_pred.shape[0], ag_pred.shape[1], 1])
+
+    X_pred = np.concatenate([ag_pred, ag_pred, ag_pred[0:3]], axis=0)[:, 0:2500, :]
+    y_pred_ref = np.concatenate([u_pred, u_pred, u_pred[0:3]], axis=0)[:, 0:2500, :]
+    yt_pred_ref = np.concatenate([ut_pred, ut_pred, ut_pred[0:3]], axis=0)[:, 0:2500, :]
+    ytt_pred_ref = np.concatenate([utt_pred, utt_pred, utt_pred[0:3]], axis=0)[:, 0:2500, :]
+
+    # Prediction
+    eta, eta_t, eta_tt = model.predict(X_pred)
+    y_pred = eta
+    yt_pred = eta_t
+    ytt_pred = eta_tt
+
+    for ii in range(len(y_pred)):
+        plt.figure()
+        plt.plot(y_pred_ref[ii, :, dof], label='True')
+        plt.plot(y_pred[ii, :, dof], label='Predict')
+        plt.title('Prediction_u')
+        plt.legend()
+
+        plt.figure()
+        plt.plot(yt_pred_ref[ii], label='True')
+        plt.plot(yt_pred[ii], label='Predict')
+        plt.title('Prediction_u_t')
+        plt.legend()
+
+        plt.figure()
+        plt.plot(ytt_pred_ref[ii, :, dof], label='True')
+        plt.plot(ytt_pred[ii, :, dof], label='Predict')
+        plt.title('Prediction_u_tt')
+        plt.legend()
+
+    R1 = []
+    R2 = []
+    R3 = []
+    for ii in range(len(y_pred_ref)):
+        reg1 = LinearRegression().fit(y_pred_ref[ii, :, 0:1], y_pred[ii, :, 0:1])
+        R1.append(reg1.coef_)
+    R = np.concatenate([np.array(R1)])
+    R = R[:, 0]
+    plt.hist(R, 'auto', density=True, facecolor='blue', alpha=0.5)
+    plt.grid(axis='y', alpha=0.75)
+    plt.xlabel('Value')
+    plt.ylabel('Frequency')
+    plt.title('Histogram_Model')
+    ax = plt.gca()
+    ax.invert_xaxis()
+
+scipy.io.savemat(dataDir + 'results/results_exp_ag2utt.mat',
+                 {'y_train_ref': y_train_ref, 'yt_train_ref': yt_train_ref, 'ytt_train_ref': ytt_train_ref,
+                  'y_train_pred': y_train_pred, 'yt_train_pred': yt_train_pred, 'ytt_train_pred': ytt_train_pred,
+                  'y_pred_ref': y_pred_ref, 'yt_pred_ref': yt_pred_ref, 'ytt_pred_ref': ytt_pred_ref,
+                  'y_pred': y_pred, 'yt_pred': yt_pred, 'ytt_pred': ytt_pred,
+                  'X_train': X_train, 'X_pred': X_pred, 'dt': dt,
+                  'train_loss': train_loss})
